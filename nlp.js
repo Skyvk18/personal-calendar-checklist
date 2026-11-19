@@ -235,13 +235,49 @@
   }
 
   function cleanTitle(text) {
-    return text
-      .replace(/^\s*(?:add|schedule|create|remind me to|remind me|put|set|plan|book|log|i have|got)\s+/i, '')
-      .replace(/^\s*(?:a|an|the)\s+/i, '')
-      .replace(/\b(?:at|on|for)\s*$/i, '')
-      .replace(/\s{2,}/g, ' ')
-      .trim()
-      .replace(/^./, ch => ch.toUpperCase());
+    let s = text.trim();
+
+    // Strip leading conversational filler & command verbs iteratively
+    const leadingPatterns = [
+      /^(?:hey|hi|hello|yo|ok|okay|please|pls|can you|could you|would you|will you|do this|help me)\b[\s,:-]*/i,
+      /^(?:add|schedule|create|put|set|plan|book|log|make|remind me to|remind me|note down|write down|enter|configure)\b[\s,:-]*/i,
+      /^(?:there is|there's|theres|i have got|i've got|ive got|i have|i've|we have|i need to|i gotta|i want to|i'm going to|im going to|got)\b[\s,:-]*/i,
+      /^(?:a|an|the|that|to|for|on|at|in)\b[\s,:-]*/i
+    ];
+
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const rx of leadingPatterns) {
+        const next = s.replace(rx, '');
+        if (next !== s) {
+          s = next.trim();
+          changed = true;
+        }
+      }
+    }
+
+    // Strip trailing dangling prepositions/politeness
+    const trailingPatterns = [
+      /[\s,:-]*\b(?:at|on|for|in|to|from|by|around|about|please|pls|thanks|thank you)\s*[?.!]*$/i,
+      /[?.!]+$/
+    ];
+
+    changed = true;
+    while (changed) {
+      changed = false;
+      for (const rx of trailingPatterns) {
+        const next = s.replace(rx, '');
+        if (next !== s) {
+          s = next.trim();
+          changed = true;
+        }
+      }
+    }
+
+    s = s.replace(/\s{2,}/g, ' ').trim();
+    if (!s) return '';
+    return s.charAt(0).toUpperCase() + s.slice(1);
   }
 
   /**

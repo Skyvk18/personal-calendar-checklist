@@ -70,6 +70,13 @@
 
     <!-- Center Main Stage -->
     <main class="main-stage">
+      <div class="stage-topbar">
+        <span class="stage-topbar-hint">Click any task to check off, or click a calendar day for details</span>
+        <button type="button" class="btn-ghost how-it-works-btn" onclick="openHowItWorksModal()">
+          ? How it works
+        </button>
+      </div>
+
       <!-- VIEW 1: TODAY (LOCK IN MAIN PAGE) -->
       <section id="view-today" class="view-panel active">
         <div class="today-header">
@@ -228,6 +235,88 @@
         <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
           <button type="button" class="btn-ghost" onclick="closeNewCalendarModal()">Cancel</button>
           <button type="submit" class="btn-primary btn-accent">Create Calendar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- How It Works Modal -->
+  <div id="how-modal" class="modal-backdrop" onclick="closeHowItWorksModal()">
+    <div class="modal-card" style="width:min(520px, 100%);" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="font-family:var(--font-serif); font-size:1.65rem; font-weight:400;">How Daybook Works</h3>
+        <button type="button" class="btn-ghost" onclick="closeHowItWorksModal()">✕</button>
+      </div>
+      <div class="how-steps">
+        <div class="how-step">
+          <div class="how-step-num">01</div>
+          <div>
+            <strong>Today (Lock In)</strong>
+            <p>Your main page automatically pulls today's tasks and timed events from your calendars so you can focus and check them off.</p>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">02</div>
+          <div>
+            <strong>Calendar &amp; Day Agenda</strong>
+            <p>Switch to <em>Calendar</em> and click any day to open its full timeline ("At 4:00 PM — ..."), add items, or edit existing ones.</p>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">03</div>
+          <div>
+            <strong>Multiple Calendars or Combined</strong>
+            <p>Create labeled calendars (e.g., School, Work, Fitness) using <strong>+</strong> in the sidebar. View them all combined or focus on one at a time.</p>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">04</div>
+          <div>
+            <strong>Planner Chat</strong>
+            <p>Type naturally like <em>"Today there is tennis practice at 5pm"</em> or <em>"Tomorrow at 3pm Dentist"</em> and it extracts only the relevant title, date, and time onto your calendar.</p>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; justify-content:flex-end;">
+        <button type="button" class="btn-primary btn-accent" onclick="closeHowItWorksModal()">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Event Modal -->
+  <div id="edit-event-modal" class="modal-backdrop" onclick="closeEditEventModal()">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="font-family:var(--font-serif); font-size:1.5rem; font-weight:400;">Edit Item</h3>
+        <button type="button" class="btn-ghost" onclick="closeEditEventModal()">✕</button>
+      </div>
+      <form onsubmit="handleSaveEditEvent(event)" style="display:flex; flex-direction:column; gap:0.85rem;">
+        <input type="hidden" id="edit-ev-id">
+        <div>
+          <label class="sidebar-label" style="display:block; margin-bottom:0.3rem;">Title</label>
+          <input type="text" id="edit-ev-title" class="input-field" required>
+        </div>
+        <div class="form-row">
+          <div>
+            <label class="sidebar-label" style="display:block; margin-bottom:0.3rem;">Date</label>
+            <input type="date" id="edit-ev-date" class="input-field" required>
+          </div>
+          <div>
+            <label class="sidebar-label" style="display:block; margin-bottom:0.3rem;">Time</label>
+            <input type="time" id="edit-ev-time" class="input-field">
+          </div>
+        </div>
+        <div>
+          <label class="sidebar-label" style="display:block; margin-bottom:0.3rem;">Calendar</label>
+          <select id="edit-ev-cal" class="input-field"></select>
+        </div>
+        <div>
+          <label class="sidebar-label" style="display:block; margin-bottom:0.3rem;">Notes</label>
+          <input type="text" id="edit-ev-notes" class="input-field" placeholder="Optional notes or location">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
+          <button type="button" class="btn-ghost" onclick="closeEditEventModal()">Cancel</button>
+          <button type="submit" class="btn-primary btn-accent">Save Changes</button>
         </div>
       </form>
     </div>

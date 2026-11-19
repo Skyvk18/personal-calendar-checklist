@@ -1,5 +1,5 @@
 (function () {
-  const STORAGE_KEY = 'daybook_planner_v1';
+  const STORAGE_KEY = 'daybook_planner_v2';
   const THEME_KEY = 'daybook_theme_v1';
 
   const SWATCH_COLORS = [
@@ -22,89 +22,17 @@
   }
 
   function createDefaultState() {
-    const t0 = todayISO();
-    const t1 = offsetISO(1);
-    const t2 = offsetISO(2);
-    const t4 = offsetISO(4);
-
     return {
       calendars: [
-        { id: 'work', name: 'Work', color: '#2563eb', visible: true },
-        { id: 'school', name: 'School', color: '#7c3aed', visible: true },
-        { id: 'fitness', name: 'Fitness', color: '#1f7a53', visible: true },
-        { id: 'personal', name: 'Personal', color: '#c84b31', visible: true }
+        { id: 'personal', name: 'My Calendar', color: '#c84b31', visible: true }
       ],
       focusedCalendarId: null, // null = combined mode
-      events: [
-        {
-          id: 'ev-1',
-          title: 'Morning Standup & Sprint Sync',
-          date: t0,
-          time: '09:30',
-          calendarId: 'work',
-          notes: 'Review blockers and Q4 roadmap',
-          completed: true
-        },
-        {
-          id: 'ev-2',
-          title: 'Algorithms Lecture — Graph Traversal',
-          date: t0,
-          time: '13:00',
-          calendarId: 'school',
-          notes: 'Room 302B • Bring laptop',
-          completed: false
-        },
-        {
-          id: 'ev-3',
-          title: 'Upper Body Strength Session',
-          date: t0,
-          time: '17:30',
-          calendarId: 'fitness',
-          notes: '45 min + stretching',
-          completed: false
-        },
-        {
-          id: 'ev-4',
-          title: 'Pick up groceries for dinner',
-          date: t0,
-          time: '',
-          calendarId: 'personal',
-          notes: 'Salmon, greens, olive oil',
-          completed: false
-        },
-        {
-          id: 'ev-5',
-          title: 'Design Review with Product Team',
-          date: t1,
-          time: '11:00',
-          calendarId: 'work',
-          notes: '',
-          completed: false
-        },
-        {
-          id: 'ev-6',
-          title: 'Submit Data Structures Lab 4',
-          date: t2,
-          time: '23:59',
-          calendarId: 'school',
-          notes: 'Upload ZIP to portal',
-          completed: false
-        },
-        {
-          id: 'ev-7',
-          title: '5K Tempo Run',
-          date: t4,
-          time: '08:00',
-          calendarId: 'fitness',
-          notes: 'Riverside trail',
-          completed: false
-        }
-      ],
+      events: [],
       chatHistory: [
         {
           id: 'msg-welcome',
           role: 'assistant',
-          text: 'Tell me what you have coming up and I will configure it onto your calendar. Try "Tomorrow at 3pm Dentist in Personal" or "Today at 8pm Read 20 pages".'
+          text: 'Your calendar is a blank slate. Tell me what you have coming up—like "Today there is tennis practice at 5pm" or "Tomorrow at 3pm Dentist"—and I will add only the relevant event to your schedule.'
         }
       ]
     };
@@ -259,13 +187,14 @@
         </div>
         <div style="display:flex; align-items:center; gap:0.35rem;">
           <span class="cal-count">${count}</span>
-          ${
-            state.calendars.length > 1
-              ? `<div class="cal-actions">
-                  <button type="button" class="icon-btn-sm" title="Delete calendar" onclick="event.stopPropagation(); deleteCalendar('${cal.id}')">×</button>
-                </div>`
-              : ''
-          }
+          <div class="cal-actions">
+            <button type="button" class="icon-btn-sm" title="Rename calendar" onclick="event.stopPropagation(); renameCalendar('${cal.id}')">✎</button>
+            ${
+              state.calendars.length > 1
+                ? `<button type="button" class="icon-btn-sm" title="Delete calendar" onclick="event.stopPropagation(); deleteCalendar('${cal.id}')">×</button>`
+                : ''
+            }
+          </div>
         </div>
       `;
       listEl.appendChild(row);
@@ -274,7 +203,8 @@
     // Update calendar dropdowns in forms
     const selects = [
       document.getElementById('quick-cal-select'),
-      document.getElementById('drawer-cal-select')
+      document.getElementById('drawer-cal-select'),
+      document.getElementById('edit-ev-cal')
     ];
     selects.forEach(sel => {
       if (!sel) return;
@@ -309,6 +239,17 @@
     if (cal) cal.visible = !cal.visible;
     saveState();
     render();
+  };
+
+  window.renameCalendar = function (calId) {
+    const cal = getCalendar(calId);
+    if (!cal) return;
+    const nextName = prompt('Rename calendar:', cal.name);
+    if (nextName && nextName.trim()) {
+      cal.name = nextName.trim();
+      saveState();
+      render();
+    }
   };
 
   window.deleteCalendar = function (calId) {
@@ -451,6 +392,7 @@
           </div>
         </div>
         <div class="agenda-actions">
+          <button type="button" class="icon-btn-sm" title="Edit" onclick="openEditEventModal('${ev.id}')">✎</button>
           <button type="button" class="icon-btn-sm" title="Delete" onclick="deleteEvent('${ev.id}')">×</button>
         </div>
       </div>
@@ -677,7 +619,10 @@
                   </div>
                 </div>
               </div>
-              <button type="button" class="icon-btn-sm" onclick="deleteEvent('${ev.id}')">×</button>
+              <div class="agenda-actions">
+                <button type="button" class="icon-btn-sm" title="Edit" onclick="openEditEventModal('${ev.id}')">✎</button>
+                <button type="button" class="icon-btn-sm" title="Delete" onclick="deleteEvent('${ev.id}')">×</button>
+              </div>
             </div>
           `;
         })
@@ -920,6 +865,49 @@
     ];
     saveState();
     renderChat();
+  };
+
+  window.openHowItWorksModal = function () {
+    document.getElementById('how-modal').classList.add('open');
+  };
+
+  window.closeHowItWorksModal = function () {
+    document.getElementById('how-modal').classList.remove('open');
+  };
+
+  window.openEditEventModal = function (evId) {
+    const ev = state.events.find(x => x.id === evId);
+    if (!ev) return;
+    document.getElementById('edit-ev-id').value = ev.id;
+    document.getElementById('edit-ev-title').value = ev.title;
+    document.getElementById('edit-ev-date').value = ev.date;
+    document.getElementById('edit-ev-time').value = ev.time || '';
+    document.getElementById('edit-ev-cal').value = ev.calendarId;
+    document.getElementById('edit-ev-notes').value = ev.notes || '';
+    document.getElementById('edit-event-modal').classList.add('open');
+    setTimeout(() => document.getElementById('edit-ev-title').focus(), 50);
+  };
+
+  window.closeEditEventModal = function () {
+    document.getElementById('edit-event-modal').classList.remove('open');
+  };
+
+  window.handleSaveEditEvent = function (e) {
+    e.preventDefault();
+    const id = document.getElementById('edit-ev-id').value;
+    const ev = state.events.find(x => x.id === id);
+    if (!ev) return;
+    const title = document.getElementById('edit-ev-title').value.trim();
+    if (!title) return;
+    ev.title = title;
+    ev.date = document.getElementById('edit-ev-date').value;
+    ev.time = document.getElementById('edit-ev-time').value;
+    ev.calendarId = document.getElementById('edit-ev-cal').value;
+    ev.notes = document.getElementById('edit-ev-notes').value.trim();
+    saveState();
+    closeEditEventModal();
+    render();
+    if (selectedDayISO) renderDayDrawer();
   };
 
   // Master Render
