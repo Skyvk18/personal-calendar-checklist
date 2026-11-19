@@ -308,7 +308,56 @@
       };
     }
 
-    // 2. Create Calendar command
+    // 2. Create Checklist command
+    const createClMatch = input.match(/^(?:create|add|new|make)\s+(?:a\s+)?(?:study\s+)?checklist\s+(?:called\s+|named\s+|for\s+)?["']?([a-z0-9\s_-]+?)["']?$/i);
+    if (createClMatch) {
+      const title = createClMatch[1].trim().replace(/\b\w/g, c => c.toUpperCase());
+      return {
+        type: 'create_checklist',
+        title,
+        replyText: `Created a new checklist "${title}".`
+      };
+    }
+
+    // 2b. Add item to a Checklist: "add X to <Name> checklist" or "add X to <existing checklist name>"
+    const checklists = state.checklists || [];
+    const clExplicitMatch = input.match(/^(?:add|put|include|note)\s+(.+?)\s+(?:to|in|into|on|under)\s+(?:my\s+)?(.+?)\s+checklist$/i);
+    if (clExplicitMatch) {
+      const itemText = cleanTitle(clExplicitMatch[1]);
+      const targetName = clExplicitMatch[2].trim();
+      if (itemText) {
+        return {
+          type: 'add_checklist_item',
+          itemText,
+          checklistName: targetName,
+          replyText: `Added "${itemText}" to checklist "${targetName}".`
+        };
+      }
+    }
+
+    for (const cl of checklists) {
+      const escaped = cl.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const clMatch = input.match(new RegExp(`^(?:add|put|include|note)\\s+(.+?)\\s+(?:to|in|into|on|under)\\s+(?:my\\s+)?${escaped}$`, 'i'));
+      if (clMatch) {
+        const itemText = cleanTitle(clMatch[1]);
+        if (itemText) {
+          return {
+            type: 'add_checklist_item',
+            itemText,
+            checklistId: cl.id,
+            checklistName: cl.title,
+            replyText: `Added "${itemText}" to checklist "${cl.title}".`
+          };
+        }
+      }
+    }
+
+    // 2c. Query checklists: "show checklists", "what's in my checklists"
+    if (/^(?:show|list|what(?:'s| is) in)\s+(?:my\s+)?checklists?\??$/i.test(input)) {
+      return { type: 'query_checklists' };
+    }
+
+    // 3. Create Calendar command
     const createCalMatch = input.match(/^(?:create|add|new|make)\s+(?:a\s+)?calendar\s+(?:called\s+|named\s+)?["']?([a-z0-9\s_-]+?)["']?(?:\s+(?:with|in)\s+(?:color\s+)?([a-z]+))?$/i);
     if (createCalMatch) {
       const name = createCalMatch[1].trim().replace(/\b\w/g, c => c.toUpperCase());

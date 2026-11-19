@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Daybook — Calendar & Daily Lock-In Planner</title>
+  <title>Personal Tracker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
   <!-- Mobile Topbar -->
   <header class="mobile-topbar">
     <button type="button" class="btn-ghost" onclick="toggleMobileSidebar()">☰ Menu</button>
-    <div class="brand-name" style="font-size:1.35rem;">Daybook</div>
+    <div class="brand-name" style="font-size:1.35rem;">Personal Tracker</div>
     <button type="button" class="btn-ghost" onclick="toggleMobileChat()">Chat</button>
   </header>
 
@@ -24,7 +24,7 @@
       <div class="brand-row">
         <div class="brand">
           <div class="brand-cal-icon"><span id="brand-day-num">18</span></div>
-          <span class="brand-name">Daybook</span>
+          <span class="brand-name">Personal Tracker</span>
         </div>
       </div>
 
@@ -42,6 +42,14 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             <span>Calendar</span>
           </span>
+        </button>
+
+        <button type="button" class="nav-item" data-view="checklists" onclick="switchView('checklists')">
+          <span class="nav-item-left">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <span>Checklists</span>
+          </span>
+          <span id="checklists-nav-badge" class="nav-badge" style="display:none;">0</span>
         </button>
       </nav>
 
@@ -149,6 +157,21 @@
 
         <div id="calendar-grid-container" class="month-grid-wrap"></div>
       </section>
+
+      <!-- VIEW 3: CHECKLISTS (STUDY / COMPETITION BOARDS) -->
+      <section id="view-checklists" class="view-panel">
+        <div class="today-header" style="margin-bottom:1.25rem;">
+          <div>
+            <div class="eyebrow">STUDY &amp; COMPETITION PREP</div>
+            <h1 class="today-title">Checklists</h1>
+          </div>
+          <button type="button" class="btn-primary btn-accent" onclick="createNewChecklistPrompt()">
+            + New Checklist
+          </button>
+        </div>
+
+        <div id="checklists-grid" class="checklists-grid"></div>
+      </section>
     </main>
 
     <!-- Right Panel: Plan by Chat -->
@@ -170,10 +193,10 @@
       <div id="chat-messages" class="chat-messages"></div>
 
       <div class="chat-suggestions">
-        <button type="button" class="suggestion-chip" onclick="sendSuggestion('Today at 6pm Gym in Fitness')">Today 6pm Gym</button>
-        <button type="button" class="suggestion-chip" onclick="sendSuggestion('Tomorrow at 2pm Study Session in School')">Tomorrow 2pm Study</button>
+        <button type="button" class="suggestion-chip" onclick="sendSuggestion('Today there is tennis practice at 5pm')">Today 5pm Tennis</button>
+        <button type="button" class="suggestion-chip" onclick="sendSuggestion('Create checklist USACO Prep')">+ Study Checklist</button>
+        <button type="button" class="suggestion-chip" onclick="sendSuggestion('Add Dynamic Programming to USACO Prep checklist')">Add to Checklist</button>
         <button type="button" class="suggestion-chip" onclick="sendSuggestion('What do I have today?')">What's today?</button>
-        <button type="button" class="suggestion-chip" onclick="sendSuggestion('Create calendar Side Project in amber')">+ Side Project cal</button>
       </div>
 
       <div class="chat-input-wrap">
@@ -244,7 +267,7 @@
   <div id="how-modal" class="modal-backdrop" onclick="closeHowItWorksModal()">
     <div class="modal-card" style="width:min(520px, 100%);" onclick="event.stopPropagation()">
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3 style="font-family:var(--font-serif); font-size:1.65rem; font-weight:400;">How Daybook Works</h3>
+        <h3 style="font-family:var(--font-serif); font-size:1.65rem; font-weight:400;">How Personal Tracker Works</h3>
         <button type="button" class="btn-ghost" onclick="closeHowItWorksModal()">✕</button>
       </div>
       <div class="how-steps">

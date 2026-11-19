@@ -1,30 +1,31 @@
 :root {
-  /* Warm Paper & Ink (Default Light Theme) */
-  --bg-app: #f5f2eb;
+  /* Crimson & Navy Editorial (Sharp Swiss Grid) */
+  --bg-app: #f6f4ef;
   --bg-surface: #ffffff;
-  --bg-subtle: #ede9df;
-  --bg-hover: #e5e0d4;
-  --border: #dfd9cc;
-  --border-strong: #cbc3b2;
+  --bg-subtle: #ece9e1;
+  --bg-hover: #e2ded3;
+  --border: #d0cbc0;
+  --border-strong: #1c1917;
 
-  --text-primary: #18181b;
-  --text-secondary: #5c5850;
-  --text-muted: #8b857a;
+  --text-primary: #141413;
+  --text-secondary: #4a4742;
+  --text-muted: #78736a;
 
-  --accent: #c84b31;
-  --accent-hover: #b03d25;
-  --accent-soft: rgba(200, 75, 49, 0.1);
+  --accent: #c81e1e;
+  --accent-hover: #a61414;
+  --accent-soft: rgba(200, 30, 30, 0.08);
+  --secondary: #1d3557;
 
-  --success: #1f7a53;
-  --success-soft: rgba(31, 122, 83, 0.12);
+  --success: #1b6b45;
+  --success-soft: rgba(27, 107, 69, 0.12);
 
-  --shadow-sm: 0 1px 2px rgba(24, 24, 27, 0.04);
-  --shadow-md: 0 6px 20px rgba(24, 24, 27, 0.06);
-  --shadow-lg: 0 16px 40px rgba(24, 24, 27, 0.1);
+  --shadow-sm: none;
+  --shadow-md: 3px 3px 0px rgba(20, 20, 19, 0.08);
+  --shadow-lg: 6px 6px 0px rgba(20, 20, 19, 0.14);
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 3px;
 
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-serif: 'Instrument Serif', Georgia, serif;
@@ -32,27 +33,55 @@
 }
 
 [data-theme="dark"] {
-  --bg-app: #121210;
-  --bg-surface: #1b1b18;
-  --bg-subtle: #242420;
-  --bg-hover: #2d2d28;
-  --border: #2e2e29;
-  --border-strong: #42423b;
+  /* Midnight Red & Steel */
+  --bg-app: #0f0f10;
+  --bg-surface: #171719;
+  --bg-subtle: #202024;
+  --bg-hover: #2a2a2f;
+  --border: #2e2e34;
+  --border-strong: #52525b;
 
-  --text-primary: #f4f1ea;
-  --text-secondary: #a8a398;
-  --text-muted: #757168;
+  --text-primary: #f4f4f5;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
 
-  --accent: #e06348;
-  --accent-hover: #eb755b;
-  --accent-soft: rgba(224, 99, 72, 0.14);
+  --accent: #e03131;
+  --accent-hover: #f03e3e;
+  --accent-soft: rgba(224, 49, 49, 0.15);
+  --secondary: #4dabf7;
 
-  --success: #34a873;
-  --success-soft: rgba(52, 168, 115, 0.15);
+  --success: #2f9e66;
+  --success-soft: rgba(47, 158, 102, 0.16);
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 18px 44px rgba(0, 0, 0, 0.5);
+  --shadow-sm: none;
+  --shadow-md: 3px 3px 0px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 6px 6px 0px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="forest"] {
+  /* Crimson Red & Forest Green */
+  --bg-app: #f4f3ee;
+  --bg-surface: #ffffff;
+  --bg-subtle: #e7e5dc;
+  --bg-hover: #dcd9cd;
+  --border: #c9c5b6;
+  --border-strong: #1b4332;
+
+  --text-primary: #14241c;
+  --text-secondary: #3d5246;
+  --text-muted: #6c7d73;
+
+  --accent: #b91c1c;
+  --accent-hover: #991b1b;
+  --accent-soft: rgba(185, 28, 28, 0.09);
+  --secondary: #1b4332;
+
+  --success: #1b4332;
+  --success-soft: rgba(27, 67, 50, 0.12);
+
+  --shadow-sm: none;
+  --shadow-md: 3px 3px 0px rgba(27, 67, 50, 0.1);
+  --shadow-lg: 6px 6px 0px rgba(27, 67, 50, 0.16);
 }
 
 * {
@@ -111,7 +140,7 @@ button, input, select, textarea {
 .brand-cal-icon {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: 2px;
   background: var(--text-primary);
   color: var(--bg-surface);
   display: flex;
@@ -567,7 +596,7 @@ button, input, select, textarea {
   color: var(--bg-surface);
   border: none;
   padding: 0.5rem 1rem;
-  border-radius: 8px;
+  border-radius: 2px;
   font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
@@ -591,7 +620,7 @@ button, input, select, textarea {
   border: 1px solid var(--border);
   color: var(--text-secondary);
   padding: 0.45rem 0.85rem;
-  border-radius: 8px;
+  border-radius: 2px;
   font-size: 0.82rem;
   font-weight: 500;
   cursor: pointer;
@@ -620,7 +649,7 @@ button, input, select, textarea {
 
 .pill {
   padding: 0.35rem 0.75rem;
-  border-radius: 99px;
+  border-radius: 2px;
   border: 1px solid var(--border);
   background: var(--bg-surface);
   color: var(--text-secondary);
@@ -806,6 +835,102 @@ button, input, select, textarea {
   margin-top: 0.35rem;
   font-size: 0.85rem;
   color: var(--text-muted);
+}
+
+/* Checklists Grid & Boards */
+.checklists-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.15rem;
+}
+
+.checklist-board {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.1rem 1.15rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.checklist-board-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.checklist-board-title {
+  font-family: var(--font-serif);
+  font-size: 1.45rem;
+  line-height: 1.15;
+}
+
+.checklist-board-tag {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  margin-top: 0.15rem;
+}
+
+.checklist-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.checklist-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: 8px;
+  background: var(--bg-app);
+  border: 1px solid var(--border);
+}
+
+.checklist-row.completed .checklist-row-text {
+  text-decoration: line-through;
+  opacity: 0.55;
+}
+
+.checklist-row-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.checklist-row-text {
+  font-size: 0.86rem;
+  word-break: break-word;
+}
+
+.checklist-add-row {
+  display: flex;
+  gap: 0.45rem;
+  margin-top: auto;
+}
+
+.checklist-add-row input {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-app);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.84rem;
+  outline: none;
+}
+
+.checklist-add-row input:focus {
+  border-color: var(--text-primary);
 }
 
 /* Calendar View */
@@ -1161,10 +1286,10 @@ button, input, select, textarea {
 }
 
 .chat-msg {
-  max-width: 90%;
-  padding: 0.75rem 0.9rem;
-  border-radius: 12px;
-  font-size: 0.86rem;
+  max-width: 92%;
+  padding: 0.7rem 0.85rem;
+  border-radius: 2px;
+  font-size: 0.85rem;
   line-height: 1.45;
 }
 
@@ -1172,14 +1297,14 @@ button, input, select, textarea {
   align-self: flex-start;
   background: var(--bg-app);
   border: 1px solid var(--border);
-  border-bottom-left-radius: 4px;
+  border-left: 3px solid var(--secondary);
 }
 
 .chat-msg.user {
   align-self: flex-end;
   background: var(--text-primary);
   color: var(--bg-surface);
-  border-bottom-right-radius: 4px;
+  border-right: 3px solid var(--accent);
 }
 
 .chat-action-card {
@@ -1227,9 +1352,9 @@ button, input, select, textarea {
 
 .suggestion-chip {
   white-space: nowrap;
-  font-size: 0.75rem;
-  padding: 0.3rem 0.65rem;
-  border-radius: 99px;
+  font-size: 0.74rem;
+  padding: 0.28rem 0.6rem;
+  border-radius: 2px;
   border: 1px solid var(--border);
   background: var(--bg-surface);
   color: var(--text-secondary);
@@ -1254,7 +1379,7 @@ button, input, select, textarea {
   resize: none;
   border: 1px solid var(--border);
   background: var(--bg-app);
-  border-radius: 10px;
+  border-radius: 2px;
   padding: 0.6rem 0.8rem;
   font-size: 0.86rem;
   max-height: 110px;

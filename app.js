@@ -28,6 +28,7 @@
       ],
       focusedCalendarId: null, // null = combined mode
       events: [],
+      checklists: [],
       chatHistory: [
         {
           id: 'msg-welcome',
@@ -53,7 +54,9 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(seed));
         return seed;
       }
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed.checklists)) parsed.checklists = [];
+      return parsed;
     } catch {
       return createDefaultState();
     }
@@ -64,15 +67,19 @@
   }
 
   // Theme
+  const THEMES = ['light', 'dark', 'forest'];
+
   function initTheme() {
     const saved = localStorage.getItem(THEME_KEY) || 'light';
-    document.documentElement.setAttribute('data-theme', saved);
-    updateThemeButton(saved);
+    const valid = THEMES.includes(saved) ? saved : 'light';
+    document.documentElement.setAttribute('data-theme', valid);
+    updateThemeButton(valid);
   }
 
   function toggleTheme() {
     const current = document.documentElement.getAttribute('data-theme') || 'light';
-    const next = current === 'light' ? 'dark' : 'light';
+    const idx = THEMES.indexOf(current);
+    const next = THEMES[(idx + 1) % THEMES.length];
     document.documentElement.setAttribute('data-theme', next);
     localStorage.setItem(THEME_KEY, next);
     updateThemeButton(next);
@@ -80,7 +87,10 @@
 
   function updateThemeButton(theme) {
     const lbl = document.getElementById('theme-label');
-    if (lbl) lbl.textContent = theme === 'dark' ? 'Dark (Obsidian)' : 'Paper (Light)';
+    if (!lbl) return;
+    if (theme === 'dark') lbl.textContent = 'Midnight Red';
+    else if (theme === 'forest') lbl.textContent = 'Red & Forest';
+    else lbl.textContent = 'Crimson & Navy';
   }
 
   // Helpers
@@ -161,6 +171,16 @@
     const badge = document.getElementById('today-nav-badge');
     badge.textContent = remainingToday;
     badge.style.display = remainingToday > 0 ? 'inline-block' : 'none';
+
+    const openChecklistItems = (state.checklists || []).reduce(
+      (sum, cl) => sum + cl.items.filter(i => !i.completed).length,
+      0
+    );
+    const clBadge = document.getElementById('checklists-nav-badge');
+    if (clBadge) {
+      clBadge.textContent = openChecklistItems;
+      clBadge.style.display = openChecklistItems > 0 ? 'inline-block' : 'none';
+    }
 
     const combinedBtn = document.getElementById('btn-mode-combined');
     combinedBtn.classList.toggle('active', state.focusedCalendarId === null);
@@ -756,6 +776,74 @@
         text: result.replyText,
         cards
       });
+    } else if (result.type === 'create_checklist') {
+      const id = 'cl-' + Date.now();
+      state.checklists.push({
+        id,
+        title: result.title,
+        label: 'Study / Prep',
+        items: []
+      });
+      state.chatHistory.push({
+        id: 'msg-' + (Date.now() + 1),
+        role: 'assistant',
+        text: result.replyText,
+        cards: [
+          {
+            title: result.title,
+            subtitle: 'New checklist created — open Checklists tab to view',
+            color: '#c81e1e'
+          }
+        ]
+      });
+    } else if (result.type === 'add_checklist_item') {
+      let cl = result.checklistId
+        ? state.checklists.find(c => c.id === result.checklistId)
+        : state.checklists.find(c => c.title.toLowerCase() === result.checklistName.toLowerCase());
+      if (!cl) {
+        cl = {
+          id: 'cl-' + Date.now(),
+          title: result.checklistName.replace(/\b\w/g, c => c.toUpperCase()),
+          label: 'Study / Prep',
+          items: []
+        };
+        state.checklists.push(cl);
+      }
+      cl.items.push({
+        id: 'cli-' + Date.now(),
+        text: result.itemText,
+        completed: false
+      });
+      state.chatHistory.push({
+        id: 'msg-' + (Date.now() + 1),
+        role: 'assistant',
+        text: `Added "${result.itemText}" to "${cl.title}" checklist.`,
+        cards: [
+          {
+            title: result.itemText,
+            subtitle: `Checklist: ${cl.title}`,
+            color: '#1d3557'
+          }
+        ]
+      });
+    } else if (result.type === 'query_checklists') {
+      if (!state.checklists || state.checklists.length === 0) {
+        state.chatHistory.push({
+          id: 'msg-' + (Date.now() + 1),
+          role: 'assistant',
+          text: 'You have no checklists yet. Say "Create checklist USACO Prep" to start one.'
+        });
+      } else {
+        const lines = state.checklists.map(cl => {
+          const done = cl.items.filter(i => i.completed).length;
+          return `• ${cl.title} (${done}/${cl.items.length} done)`;
+        });
+        state.chatHistory.push({
+          id: 'msg-' + (Date.now() + 1),
+          role: 'assistant',
+          text: `Your checklists:\n${lines.join('\n')}`
+        });
+      }
     } else if (result.type === 'create_calendar') {
       const id = 'cal-' + Date.now();
       state.calendars.push({
@@ -814,11 +902,30 @@
           text: `Marked "${target.title}" as completed.`
         });
       } else {
-        state.chatHistory.push({
-          id: 'msg-' + (Date.now() + 1),
-          role: 'assistant',
-          text: `Could not find an open task matching "${result.query}".`
-        });
+        let clItemMatch = null;
+        let clOwner = null;
+        for (const cl of state.checklists || []) {
+          const found = cl.items.find(i => !i.completed && i.text.toLowerCase().includes(q));
+          if (found) {
+            clItemMatch = found;
+            clOwner = cl;
+            break;
+          }
+        }
+        if (clItemMatch) {
+          clItemMatch.completed = true;
+          state.chatHistory.push({
+            id: 'msg-' + (Date.now() + 1),
+            role: 'assistant',
+            text: `Checked off "${clItemMatch.text}" in "${clOwner.title}".`
+          });
+        } else {
+          state.chatHistory.push({
+            id: 'msg-' + (Date.now() + 1),
+            role: 'assistant',
+            text: `Could not find an open task or checklist item matching "${result.query}".`
+          });
+        }
       }
     } else if (result.type === 'delete_item') {
       const q = result.query.toLowerCase();
@@ -831,11 +938,28 @@
           text: `Removed "${target.title}" from your calendar.`
         });
       } else {
-        state.chatHistory.push({
-          id: 'msg-' + (Date.now() + 1),
-          role: 'assistant',
-          text: `Could not find an item matching "${result.query}".`
-        });
+        let removedText = null;
+        for (const cl of state.checklists || []) {
+          const idx = cl.items.findIndex(i => i.text.toLowerCase().includes(q));
+          if (idx !== -1) {
+            removedText = cl.items[idx].text;
+            cl.items.splice(idx, 1);
+            break;
+          }
+        }
+        if (removedText) {
+          state.chatHistory.push({
+            id: 'msg-' + (Date.now() + 1),
+            role: 'assistant',
+            text: `Removed "${removedText}" from your checklist.`
+          });
+        } else {
+          state.chatHistory.push({
+            id: 'msg-' + (Date.now() + 1),
+            role: 'assistant',
+            text: `Could not find an item matching "${result.query}".`
+          });
+        }
       }
     } else {
       state.chatHistory.push({
@@ -910,11 +1034,167 @@
     if (selectedDayISO) renderDayDrawer();
   };
 
+  // Checklists (Study & Competition Prep)
+  function renderChecklistsView() {
+    const grid = document.getElementById('checklists-grid');
+    if (!grid) return;
+    const lists = state.checklists || [];
+
+    if (lists.length === 0) {
+      grid.innerHTML = `
+        <div class="empty-state" style="grid-column: 1 / -1;">
+          <strong>No checklists yet</strong>
+          <p>Create a checklist for a competition, exam, or project (e.g. "USACO Prep", "Biology Olympiad") to track what you need to study.</p>
+          <button type="button" class="btn-primary btn-accent" style="margin-top:0.9rem;" onclick="createNewChecklistPrompt()">+ Create First Checklist</button>
+        </div>
+      `;
+      return;
+    }
+
+    grid.innerHTML = lists
+      .map(cl => {
+        const done = cl.items.filter(i => i.completed).length;
+        const total = cl.items.length;
+        const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+
+        const itemsHtml = cl.items.length
+          ? cl.items
+              .map(
+                item => `
+            <div class="checklist-row ${item.completed ? 'completed' : ''}">
+              <div class="checklist-row-left">
+                <button type="button" class="task-checkbox" onclick="toggleChecklistItem('${cl.id}', '${item.id}')">
+                  ${item.completed ? '✓' : ''}
+                </button>
+                <span class="checklist-row-text">${escapeHtml(item.text)}</span>
+              </div>
+              <div style="display:flex; gap:0.15rem;">
+                <button type="button" class="icon-btn-sm" title="Edit item" onclick="editChecklistItem('${cl.id}', '${item.id}')">✎</button>
+                <button type="button" class="icon-btn-sm" title="Delete item" onclick="deleteChecklistItem('${cl.id}', '${item.id}')">×</button>
+              </div>
+            </div>
+          `
+              )
+              .join('')
+          : `<div style="font-size:0.82rem; color:var(--text-muted); padding:0.4rem 0;">No items yet — add one below.</div>`;
+
+        return `
+          <div class="checklist-board">
+            <div class="checklist-board-header">
+              <div>
+                <div class="checklist-board-title">${escapeHtml(cl.title)}</div>
+                ${cl.label ? `<div class="checklist-board-tag">${escapeHtml(cl.label)}</div>` : ''}
+              </div>
+              <div style="display:flex; gap:0.2rem;">
+                <button type="button" class="icon-btn-sm" title="Edit checklist" onclick="editChecklistBoard('${cl.id}')">✎</button>
+                <button type="button" class="icon-btn-sm" title="Delete checklist" onclick="deleteChecklistBoard('${cl.id}')">×</button>
+              </div>
+            </div>
+
+            <div>
+              <div class="progress-label-row" style="margin-bottom:0.25rem;">
+                <span>${done} of ${total} done</span>
+                <span style="font-family:var(--font-mono);">${pct}%</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" style="width:${pct}%"></div>
+              </div>
+            </div>
+
+            <div class="checklist-items">${itemsHtml}</div>
+
+            <form class="checklist-add-row" onsubmit="addChecklistItem(event, '${cl.id}')">
+              <input type="text" id="cl-input-${cl.id}" placeholder="Add study topic or task..." required>
+              <button type="submit" class="btn-primary">+</button>
+            </form>
+          </div>
+        `;
+      })
+      .join('');
+  }
+
+  window.createNewChecklistPrompt = function () {
+    const title = prompt('Checklist title (e.g., Math Competition, Finals Prep):');
+    if (!title || !title.trim()) return;
+    const label = prompt('Optional label / category (e.g., Competition, Study, Project):') || '';
+    state.checklists.push({
+      id: 'cl-' + Date.now(),
+      title: title.trim(),
+      label: label.trim(),
+      items: []
+    });
+    saveState();
+    render();
+  };
+
+  window.editChecklistBoard = function (clId) {
+    const cl = state.checklists.find(c => c.id === clId);
+    if (!cl) return;
+    const nextTitle = prompt('Edit checklist title:', cl.title);
+    if (nextTitle === null) return;
+    const nextLabel = prompt('Edit label / category:', cl.label || '');
+    if (nextTitle.trim()) cl.title = nextTitle.trim();
+    if (nextLabel !== null) cl.label = nextLabel.trim();
+    saveState();
+    render();
+  };
+
+  window.deleteChecklistBoard = function (clId) {
+    state.checklists = state.checklists.filter(c => c.id !== clId);
+    saveState();
+    render();
+  };
+
+  window.addChecklistItem = function (e, clId) {
+    e.preventDefault();
+    const input = document.getElementById(`cl-input-${clId}`);
+    if (!input) return;
+    const text = input.value.trim();
+    if (!text) return;
+    const cl = state.checklists.find(c => c.id === clId);
+    if (!cl) return;
+    cl.items.push({ id: 'cli-' + Date.now(), text, completed: false });
+    saveState();
+    render();
+  };
+
+  window.toggleChecklistItem = function (clId, itemId) {
+    const cl = state.checklists.find(c => c.id === clId);
+    if (!cl) return;
+    const item = cl.items.find(i => i.id === itemId);
+    if (!item) return;
+    item.completed = !item.completed;
+    saveState();
+    render();
+  };
+
+  window.editChecklistItem = function (clId, itemId) {
+    const cl = state.checklists.find(c => c.id === clId);
+    if (!cl) return;
+    const item = cl.items.find(i => i.id === itemId);
+    if (!item) return;
+    const next = prompt('Edit checklist item:', item.text);
+    if (next && next.trim()) {
+      item.text = next.trim();
+      saveState();
+      render();
+    }
+  };
+
+  window.deleteChecklistItem = function (clId, itemId) {
+    const cl = state.checklists.find(c => c.id === clId);
+    if (!cl) return;
+    cl.items = cl.items.filter(i => i.id !== itemId);
+    saveState();
+    render();
+  };
+
   // Master Render
   function render() {
     renderSidebar();
     renderTodayView();
     renderCalendarView();
+    renderChecklistsView();
     renderChat();
   }
 
