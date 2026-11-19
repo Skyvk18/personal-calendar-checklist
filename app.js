@@ -812,16 +812,17 @@
       cl.items.push({
         id: 'cli-' + Date.now(),
         text: result.itemText,
+        dueDate: result.dueDate || '',
         completed: false
       });
       state.chatHistory.push({
         id: 'msg-' + (Date.now() + 1),
         role: 'assistant',
-        text: `Added "${result.itemText}" to "${cl.title}" checklist.`,
+        text: `Added "${result.itemText}"${result.dueDate ? ` (${result.dueDate})` : ''} to "${cl.title}" checklist.`,
         cards: [
           {
             title: result.itemText,
-            subtitle: `Checklist: ${cl.title}`,
+            subtitle: `Checklist: ${cl.title}${result.dueDate ? ` • Due ${result.dueDate}` : ''}`,
             color: '#1d3557'
           }
         ]
@@ -1067,6 +1068,7 @@
                   ${item.completed ? '✓' : ''}
                 </button>
                 <span class="checklist-row-text">${escapeHtml(item.text)}</span>
+                ${item.dueDate ? `<span class="checklist-date-badge">${escapeHtml(item.dueDate)}</span>` : ''}
               </div>
               <div style="display:flex; gap:0.15rem;">
                 <button type="button" class="icon-btn-sm" title="Edit item" onclick="editChecklistItem('${cl.id}', '${item.id}')">✎</button>
@@ -1105,6 +1107,7 @@
 
             <form class="checklist-add-row" onsubmit="addChecklistItem(event, '${cl.id}')">
               <input type="text" id="cl-input-${cl.id}" placeholder="Add study topic or task..." required>
+              <input type="date" id="cl-date-${cl.id}" title="Optional due date">
               <button type="submit" class="btn-primary">+</button>
             </form>
           </div>
@@ -1148,12 +1151,14 @@
   window.addChecklistItem = function (e, clId) {
     e.preventDefault();
     const input = document.getElementById(`cl-input-${clId}`);
+    const dateInput = document.getElementById(`cl-date-${clId}`);
     if (!input) return;
     const text = input.value.trim();
     if (!text) return;
+    const dueDate = dateInput ? dateInput.value : '';
     const cl = state.checklists.find(c => c.id === clId);
     if (!cl) return;
-    cl.items.push({ id: 'cli-' + Date.now(), text, completed: false });
+    cl.items.push({ id: 'cli-' + Date.now(), text, dueDate, completed: false });
     saveState();
     render();
   };
@@ -1174,11 +1179,12 @@
     const item = cl.items.find(i => i.id === itemId);
     if (!item) return;
     const next = prompt('Edit checklist item:', item.text);
-    if (next && next.trim()) {
-      item.text = next.trim();
-      saveState();
-      render();
-    }
+    if (next === null) return;
+    const nextDate = prompt('Due date (YYYY-MM-DD, or leave blank):', item.dueDate || '');
+    if (next.trim()) item.text = next.trim();
+    if (nextDate !== null) item.dueDate = nextDate.trim();
+    saveState();
+    render();
   };
 
   window.deleteChecklistItem = function (clId, itemId) {

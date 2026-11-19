@@ -323,14 +323,16 @@
     const checklists = state.checklists || [];
     const clExplicitMatch = input.match(/^(?:add|put|include|note)\s+(.+?)\s+(?:to|in|into|on|under)\s+(?:my\s+)?(.+?)\s+checklist$/i);
     if (clExplicitMatch) {
-      const itemText = cleanTitle(clExplicitMatch[1]);
+      const dateRes = extractDate(clExplicitMatch[1], now);
+      const itemText = cleanTitle(dateRes.remaining);
       const targetName = clExplicitMatch[2].trim();
       if (itemText) {
         return {
           type: 'add_checklist_item',
           itemText,
+          dueDate: dateRes.dateStr || '',
           checklistName: targetName,
-          replyText: `Added "${itemText}" to checklist "${targetName}".`
+          replyText: `Added "${itemText}"${dateRes.dateStr ? ` (${dateRes.dateStr})` : ''} to checklist "${targetName}".`
         };
       }
     }
@@ -339,14 +341,16 @@
       const escaped = cl.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const clMatch = input.match(new RegExp(`^(?:add|put|include|note)\\s+(.+?)\\s+(?:to|in|into|on|under)\\s+(?:my\\s+)?${escaped}$`, 'i'));
       if (clMatch) {
-        const itemText = cleanTitle(clMatch[1]);
+        const dateRes = extractDate(clMatch[1], now);
+        const itemText = cleanTitle(dateRes.remaining);
         if (itemText) {
           return {
             type: 'add_checklist_item',
             itemText,
+            dueDate: dateRes.dateStr || '',
             checklistId: cl.id,
             checklistName: cl.title,
-            replyText: `Added "${itemText}" to checklist "${cl.title}".`
+            replyText: `Added "${itemText}"${dateRes.dateStr ? ` (${dateRes.dateStr})` : ''} to checklist "${cl.title}".`
           };
         }
       }

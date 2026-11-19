@@ -918,19 +918,41 @@ button, input, select, textarea {
   margin-top: auto;
 }
 
-.checklist-add-row input {
-  flex: 1;
-  min-width: 0;
+.checklist-add-row input[type="text"],
+.checklist-add-row input[type="date"] {
   background: var(--bg-app);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.45rem 0.65rem;
-  font-size: 0.84rem;
+  border-radius: 2px;
+  padding: 0.42rem 0.55rem;
+  font-size: 0.82rem;
   outline: none;
+}
+
+.checklist-add-row input[type="text"] {
+  flex: 1;
+  min-width: 0;
+}
+
+.checklist-add-row input[type="date"] {
+  width: 125px;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--text-secondary);
 }
 
 .checklist-add-row input:focus {
   border-color: var(--text-primary);
+}
+
+.checklist-date-badge {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 0.12rem 0.4rem;
+  border-radius: 2px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Calendar View */
